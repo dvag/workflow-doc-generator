@@ -4,7 +4,7 @@ inputs:
   path-to-workflow:
     description: |
       Path to workflow which should be analyzed for documentation generation.
-    required: false
+    required: true
 outputs:
   path-to-generated-doc:
     description: |
@@ -13,4 +13,5 @@ runs:
   using: "docker"
   image: "Dockerfile"
   args:
+    - generate
     - ${{ inputs.path-to-workflow }}
