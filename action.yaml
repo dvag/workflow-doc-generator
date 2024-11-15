@@ -4,7 +4,7 @@ inputs:
   path-to-workflow:
     description: |
       Path to workflow which should be analyzed for documentation generation.
-    required: true
+    required: false
 outputs:
   path-to-generated-doc:
     description: |

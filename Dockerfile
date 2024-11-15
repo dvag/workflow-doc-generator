@@ -14,4 +14,4 @@ RUN chmod +x    "${WORKSPACE}/workflowdoc.py"                               \
 WORKDIR "${WORKSPACE}"
 
 ENTRYPOINT [ "workflowdoc.py" ]
-CMD [ "generate" ]
+CMD [ "--help" ]
