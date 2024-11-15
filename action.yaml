@@ -5,6 +5,10 @@ inputs:
     description: |
       Path to workflow which should be analyzed for documentation generation.
     required: true
+  output-dir:
+    description: |
+      The directory to save the generated workflow doc file.
+    required: true
 outputs:
   path-to-generated-doc:
     description: |
@@ -15,3 +19,5 @@ runs:
   args:
     - generate
     - ${{ inputs.path-to-workflow }}
+    - "--output-dir"
+    - ${{ inputs.output-dir }}

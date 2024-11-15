@@ -315,6 +315,9 @@ def generate_normalised_yaml(yaml_file: TextIOWrapper) -> Generator[str, None, N
 def generate(
     workflow_path: Path = typer.Argument(
         ..., help="Path to the workflow to analyse and document."
+    ),
+    output_dir: Path = typer.Option(
+        None, help="Directory to save the generated workflow doc file."
     )
 ) -> None:
     """
@@ -323,15 +326,17 @@ def generate(
 
     print(f"Processing workflow {workflow_path} ...\n.\n.\n.\n")
 
-    generated_output_path = path.join(
-        path.dirname(workflow_path), f"{path.basename(workflow_path)}.md"
-    )
-    print(f"Generating documentation at {generated_output_path} ...\n.\n.\n.\n")
+    if output_dir is None:
+        output_dir = workflow_path.parent
+    
+    output_dir.mkdir(parents=True, exist_ok=True)
+    workflow_doc_output_path = output_dir / f"{workflow_path.stem}.md"
+    print(f"Generating documentation at {workflow_doc_output_path} ...\n.\n.\n.\n")
 
     with (
         open(file=workflow_path, mode="rt", encoding="utf-8") as workflow_file,
         open(
-            mode="wt", file=generated_output_path, encoding="utf-8"
+            mode="wt", file=workflow_doc_output_path, encoding="utf-8"
         ) as generated_doc_file,
     ):
 
