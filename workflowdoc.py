@@ -299,6 +299,15 @@ def generate_markdown_from_workflow(
         activity_types = workflow["on"]["workflow_run"].get("types")
         yield from [f"- {activity_type}" for activity_type in activity_types]
 
+    if "# <!-- example -->" in workflow_file_content:
+        print("Found example")
+        example_lines = workflow_file_content.split("# <!-- example -->")[1].split("\n")[1:]
+        cleaned_example_lines = [line.lstrip("#") for line in example_lines if line.strip()]  
+
+        yield "\n## Example\n"
+        yield "```yaml"
+        yield from cleaned_example_lines
+        yield "```"
 
 def generate_normalised_yaml(yaml_file: TextIOWrapper) -> Generator[str, None, None]:
     """
@@ -310,16 +319,7 @@ def generate_normalised_yaml(yaml_file: TextIOWrapper) -> Generator[str, None, N
     for line in yaml_file:
         yield YAML_RESERVED_WORDS.sub(r'\1"\2":', line)
 
-
-@app.command(name="generate")
-def generate(
-    workflow_path: Path = typer.Argument(
-        ..., help="Path to the workflow to analyse and document."
-    ),
-    output_dir: Path = typer.Option(
-        None, help="Directory to save the generated workflow doc file."
-    )
-) -> None:
+def process_file(workflow_path: Path, output_dir: Path) -> None:
     """
     Generate a markdown documentation for the workflow file at the specified path.
     """
@@ -346,6 +346,31 @@ def generate(
             print(line, file=generated_doc_file)
 
         generated_doc_file.flush()
+
+
+@app.command(name="generate")
+def generate(
+    path: Path = typer.Argument(
+        ..., help="Path to the workflow file or directory containing workflow files to analyse and document."
+    ),
+    output_dir: Path = typer.Option(
+        None, help="Directory to save the generated workflow doc file."
+    )
+) -> None:
+     """
+     Generate markdown documentation for the workflow file(s) at the specified path.
+     """
+
+     if output_dir is None:
+         output_dir = path.parent if path.is_file() else path
+
+     if path.is_file():
+         process_file(path, output_dir)
+     elif path.is_dir():
+         for workflow_file in list(path.glob("*.yaml")) + list(path.glob("*.yml")):
+             process_file(workflow_file, output_dir)
+     else:
+         print(f"Invalid path: {path}")
 
 
 if __name__ == "__main__":
