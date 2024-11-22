@@ -1,7 +1,7 @@
 name: "Workflow Doc"
 description: "A utility for generating documentation for a GitHub Actions workflow"
 inputs:
-  path-to-workflow:
+  dir-or-file-path:
     description: |
       Path to workflow which should be analyzed for documentation generation.
     required: true
@@ -18,6 +18,6 @@ runs:
   image: "Dockerfile"
   args:
     - generate
-    - ${{ inputs.path-to-workflow }}
+    - ${{ inputs.dir-or-file-path }}
     - "--output-dir"
     - ${{ inputs.output-dir }}
