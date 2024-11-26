@@ -201,8 +201,8 @@ def generate_markdown_from_workflow(
     yield f"# {workflow['name']}"
     yield f"\n{workflow_description}"
 
-    yield "\n## Workflow Diagram\n"
-    yield from render_mermaid_diagram(workflow)
+    # yield "\n## Workflow Diagram\n"
+    # yield from render_mermaid_diagram(workflow)
 
     yield "\n## Triggers"
     if "workflow_call" in workflow["on"]:
