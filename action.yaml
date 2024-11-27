@@ -9,6 +9,12 @@ inputs:
     description: |
       The directory to save the generated workflow doc file.
     required: true
+  exclude-pattern:
+    description: |
+      A pattern of paths to exclude from the documentation generation.
+    required: false
+    default: ""
+    type: string
 outputs:
   path-to-generated-doc:
     description: |
@@ -21,3 +27,5 @@ runs:
     - ${{ inputs.dir-or-file-path }}
     - "--output-dir"
     - ${{ inputs.output-dir }}
+    - "--exclude-pattern"
+    - ${{ inputs.exclude-pattern }}

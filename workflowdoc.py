@@ -18,7 +18,7 @@ import re
 from io import TextIOWrapper
 from os import path
 from pathlib import Path
-from typing import Generator
+from typing import Generator, List
 
 import typer
 import yaml
@@ -254,26 +254,25 @@ def generate_markdown_from_workflow(
     if "workflow_dispatch" in workflow["on"]:
         yield "\n### `workflow_dispatch`"
         yield "\nThis workflow can be manually triggered."
+        if workflow["on"].get("workflow_dispatch", None):
+            if workflow["on"]["workflow_dispatch"].get("inputs", None):
+                yield "\n#### `workflow_dispatch.inputs`\n"
+                yield "| Name | Description | Default | Required | Type |"
+                yield "| :--- | :---------- | :------ | :------: | :--- |"
 
-        if workflow["on"]["workflow_dispatch"].get("inputs", None):
-            yield "\n#### `workflow_dispatch.inputs`\n"
-            yield "| Name | Description | Default | Required | Type |"
-            yield "| :--- | :---------- | :------ | :------: | :--- |"
-
-            for input_name, input_details in workflow["on"]["workflow_dispatch"][
-                "inputs"
-            ].items():
-                type_table_value = render_workflow_dispatch_input_type_md_table_cell(
-                    input_details=input_details
-                )
-                yield (
-                    f"| {input_name} "
-                    f"| {input_details.get('description', '')} "
-                    f"| {input_details.get('default', '')} "
-                    f"| {'*' if input_details.get('required', False) else ''} "
-                    f"| {type_table_value} |"
-                )
-
+                for input_name, input_details in workflow["on"]["workflow_dispatch"][
+                    "inputs"
+                ].items():
+                    type_table_value = render_workflow_dispatch_input_type_md_table_cell(
+                        input_details=input_details
+                    )
+                    yield (
+                        f"| {input_name} "
+                        f"| {input_details.get('description', '')} "
+                        f"| {input_details.get('default', '')} "
+                        f"| {'*' if input_details.get('required', False) else ''} "
+                        f"| {type_table_value} |"
+                    )
     if "workflow_run" in workflow["on"]:
         yield "\n### `workflow_run`"
         yield "\nThis workflow is triggered by the execution of other workflows."
@@ -300,7 +299,6 @@ def generate_markdown_from_workflow(
         yield from [f"- {activity_type}" for activity_type in activity_types]
 
     if "# <!-- example -->" in workflow_file_content:
-        print("Found example")
         example_lines = workflow_file_content.split("# <!-- example -->")[1].split("\n")[1:]
         cleaned_example_lines = [line.lstrip("#") for line in example_lines if line.strip()]  
 
@@ -319,10 +317,14 @@ def generate_normalised_yaml(yaml_file: TextIOWrapper) -> Generator[str, None, N
     for line in yaml_file:
         yield YAML_RESERVED_WORDS.sub(r'\1"\2":', line)
 
-def process_file(workflow_path: Path, output_dir: Path) -> None:
+def process_file(workflow_path: Path, output_dir: Path, exclude: List[str]) -> None:
     """
     Generate a markdown documentation for the workflow file at the specified path.
     """
+    # Check if the file is in the exclusion list
+    if any(workflow_path.match(pattern) for pattern in exclude):
+        print(f"Skipping excluded file: {workflow_path}")
+        return
 
     print(f"Processing workflow {workflow_path} ...\n.\n.\n.\n")
 
@@ -355,6 +357,9 @@ def generate(
     ),
     output_dir: Path = typer.Option(
         None, help="Directory to save the generated workflow doc file."
+    ),
+    exclude_pattern: List[str] = typer.Option(
+        [], help="List of file names or patterns to exclude from processing."
     )
 ) -> None:
      """
@@ -365,10 +370,10 @@ def generate(
          output_dir = path.parent if path.is_file() else path
 
      if path.is_file():
-         process_file(path, output_dir)
+         process_file(path, output_dir, exclude_pattern)
      elif path.is_dir():
          for workflow_file in list(path.glob("*.yaml")) + list(path.glob("*.yml")):
-             process_file(workflow_file, output_dir)
+             process_file(workflow_file, output_dir, exclude_pattern)
      else:
          print(f"Invalid path: {path}")
 
