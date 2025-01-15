@@ -308,8 +308,9 @@ def generate_markdown_from_workflow(
         yield "```"
     
     if "# <!-- additionalContent -->" in workflow_file_content:
-        additional_content_lines = workflow_file_content.split("# <!-- additionalContent -->")[1].split("# <-- additionalContent --!>")[0]
-        cleaned_additional_content_lines = [line.lstrip("#") for line in additional_content_lines if line.strip()]  
+        content_between_markers = workflow_file_content.split("# <!-- additionalContent -->")[1].split("# <-- additionalContent --!>")[0]
+        additional_content_lines = content_between_markers.split("\n")[1:]
+        cleaned_additional_content_lines = [line.lstrip("#").lstrip(" ") for line in additional_content_lines if line.strip()]
 
         yield "\n## Additional Content\n"
         yield from cleaned_additional_content_lines
