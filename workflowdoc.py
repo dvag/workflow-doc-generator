@@ -306,6 +306,14 @@ def generate_markdown_from_workflow(
         yield "```yaml"
         yield from cleaned_example_lines
         yield "```"
+    
+    if "# <!-- additionalContent -->" in workflow_file_content:
+        content_between_markers = workflow_file_content.split("# <!-- additionalContent -->")[1].split("# <-- additionalContent --!>")[0]
+        additional_content_lines = content_between_markers.split("\n")[1:]
+        cleaned_additional_content_lines = [line.lstrip("#").lstrip(" ") for line in additional_content_lines if line.strip()]
+
+        yield "\n## Additional Content\n"
+        yield from cleaned_additional_content_lines
 
 def generate_normalised_yaml(yaml_file: TextIOWrapper) -> Generator[str, None, None]:
     """
